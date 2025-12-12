@@ -35,7 +35,7 @@ def show_homepage():
     st.write("Antarmuka web ini berfungsi sebagai alat bantu bagi tenaga medis untuk prediksi Kanker Payudara berbasis data numerik FNA menggunakan machine learning. Sekaligus menyediakan informasi edukatif yang berguna bagi pasien")
     st.markdown("---")
     st.subheader("🔍 Mode:")
-    st.write("**Tenaga Medis**: Upload data CSV FNA untuk prediksi menggunakan model Machine Learning. Dilengkapi Chatbot Teknis untuk analisis data dan model berbasis rule based")
+    st.write("**Tenaga Medis**: Upload data CSV FNA untuk prediksi menggunakan model Machine Learning. Dilengkapi Chatbot Teknis berbasis rule-based untuk analisis data dan model")
     st.write("**Pasien**: Menyediakan informasi edukatif (gejala jinak/ganas) dan akses Chatbot Edukasi seputar Kanker Payudara berbasis rule-based.")
     st.markdown("---")
     st.info("Gunakan menu di sebelah kiri untuk memilih mode.")
@@ -50,3 +50,4 @@ elif menu == "Tenaga Medis":
 elif menu == "Pasien":
     pasien.run_patient_page()
     show_bg()
+
