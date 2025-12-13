@@ -3,14 +3,10 @@ import pandas as pd
 import pickle
 import numpy as np
 
-# Memuat model dan list fitur yang diperlukan
 with open("best_model.pkl", "rb") as f:
     model = pickle.load(f)
-
 with open("feature_list.pkl", "rb") as f:
     feature_list = pickle.load(f)
-
-# FUNGSI get_malignant_probability DIHAPUS karena tidak digunakan
 
 # CHATBOT TENAGA MEDIS (RULE-BASED) 
 def chatbot_medical(query):
@@ -104,7 +100,7 @@ def chatbot_medical(query):
         return "Saya bisa menampilkan distribusi prediksi di panel jika Anda melihat bagian 'Distribusi Prediksi' setelah upload file."
 
     if "model apa" in query or "algoritma apa" in query or "pakai model" in query:
-        return "Model yang digunakan adalah **Random Forest Classifier** — dipilih karena kestabilan dan performanya pada dataset fitur numerik seperti WBCD."
+        return "Model yang digunakan adalah **Naive Bayes Classifier** — dipilih karena kestabilan dan performanya pada dataset fitur numerik seperti WBCD."
 
     if ("kenapa" in query or "mengapa" in query) and ("prediksi" in query or "hasil" in query):
         return (
@@ -147,8 +143,6 @@ def chatbot_medical(query):
     for key, val in tech_responses.items():
         if key in query:
             return val
-
-    # E. JAWABAN DEFAULT
     return "Maaf, saya belum memahami pertanyaan tersebut. Coba tanyakan tentang jumlah pasien, persentase ganas/jinak, missing value, atau validitas model."
 
 
@@ -159,7 +153,6 @@ def chat_ui(chat_history_key, chatbot_function, title):
     if chat_history_key not in st.session_state:
         st.session_state[chat_history_key] = []
 
-    # show history
     for sender, msg in st.session_state[chat_history_key]:
         if sender == "user":
             st.markdown(f"🧑 **Anda:** {msg}")
@@ -196,8 +189,8 @@ def run_tenaga_medis():
         if df is not None:
             st.session_state["medical_df"] = df
             st.success("File berhasil dibaca!")
-
-            # memastikan semua fitur ada sebelum prediksi
+            
+            # Memastikan semua fitur ada sebelum prediksi
             if all(feat in df.columns for feat in feature_list):
                 try:
                     df_input = df[feature_list]
@@ -213,13 +206,27 @@ def run_tenaga_medis():
                     st.error(f"Gagal melakukan prediksi: {e}")
             else:
                 st.warning("Beberapa fitur yang dibutuhkan model tidak ditemukan di CSV. Pastikan kolom sesuai feature_list.")
+                st.session_state["medical_df"] = df 
+
+            if "Prediction" in df.columns:
+                pred_values = df["Prediction"].astype(str)
+                ganas = (pred_values == "M").sum()
+                jinak = (pred_values == "B").sum()
+                if (ganas + jinak) == 0:
+                    if set(pred_values.unique()).issubset({"1", "0", "1.0", "0.0"}):
+                        ganas = (pred_values == "1").sum()
+                        jinak = (pred_values == "0").sum()
+                total = len(df)
+                st.subheader("📌 Hasil Prediksi")
+                st.info(f"Total Pasien yang Diprediksi: **{total}** | **Ganas (Malignant): {ganas}** pasien | **Jinak (Benign): {jinak}** pasien.")
+                
+            else:
+                st.subheader("📌 Hasil Prediksi")
+                st.warning("Prediksi belum dapat ditampilkan. Silakan unggah file yang sesuai.")
+
+            if "Prediction" in df.columns:
+                st.dataframe(st.session_state["medical_df"])
             
-            st.session_state["medical_df"] = df # Pastikan df terbaru (dengan prediksi/warning) tersimpan
-
-            st.subheader("📌 Hasil Prediksi")
-            st.dataframe(st.session_state["medical_df"])
-
-            # Download hasil prediksi 
             try:
                 csv = st.session_state["medical_df"].to_csv(index=False).encode("utf-8")
                 st.download_button(
@@ -239,6 +246,5 @@ def run_tenaga_medis():
 
     chat_ui("chat_medical", chatbot_medical, "💬 Chatbot Teknis (Untuk Tenaga Medis)")
 
-# Jika file ini dijalankan langsung, jalankan fungsi
 if __name__ == "__main__":
     run_tenaga_medis()
