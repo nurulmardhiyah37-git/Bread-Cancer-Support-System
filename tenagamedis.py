@@ -1,40 +1,16 @@
-
-
 import streamlit as st
 import pandas as pd
 import pickle
 import numpy as np
 
+# Memuat model dan list fitur yang diperlukan
 with open("best_model.pkl", "rb") as f:
     model = pickle.load(f)
-try:
-    with open("feature_names.pkl", "rb") as f:
-        feature_labels = pickle.load(f)
-except Exception:
-    feature_labels = {}
+
 with open("feature_list.pkl", "rb") as f:
     feature_list = pickle.load(f)
 
-def get_malignant_probability(model, X):
-    if not hasattr(model, "predict_proba"):
-        return None
-    try:
-        probs = model.predict_proba(X)[0]
-        classes = list(model.classes_)
-        mal_idx = None
-        for i, c in enumerate(classes):
-            s = str(c).lower()
-            if s.startswith("m") or s.startswith("mal") or s == "1" or s == "1.0":
-                mal_idx = i
-                break
-        if mal_idx is None and len(classes) == 2:
-            mal_idx = 1
-        if mal_idx is None:
-            return None
-        return float(probs[mal_idx])
-    except Exception:
-        return None
-
+# FUNGSI get_malignant_probability DIHAPUS karena tidak digunakan
 
 # CHATBOT TENAGA MEDIS (RULE-BASED) 
 def chatbot_medical(query):
@@ -136,19 +112,6 @@ def chatbot_medical(query):
             "Nilai fitur yang jauh dari rentang normal cenderung mengarah ke klasifikasi ganas."
         )
 
-    # contoh sederhana pola (heuristik)
-    if "pola" in query or "insight" in query or "fitur berpengaruh" in query:
-        top_feats = ["radius_worst", "area_mean", "perimeter_worst", "texture_mean"]
-        present = [f for f in top_feats if f in df.columns]
-        if present:
-            return (
-                "Berdasarkan pengetahuan umum WBCD, fitur yang sering berpengaruh adalah: "
-                + ", ".join(present) +
-                ".\nJika mau, saya bisa bantu analisis lebih lanjut (mis. perbandingan rata-rata antara kelas)."
-            )
-        else:
-            return "Beberapa fitur penting tidak ditemukan di dataset untuk memberi insight fitur paling berpengaruh."
-
     # C. PERTANYAAN TENTANG VALIDITAS & EVALUASI MODEL
     if "valid" in query or "validitas" in query or ("akurasi" in query and "model" in query) or "akurasi" in query:
         return (
@@ -189,7 +152,7 @@ def chatbot_medical(query):
     return "Maaf, saya belum memahami pertanyaan tersebut. Coba tanyakan tentang jumlah pasien, persentase ganas/jinak, missing value, atau validitas model."
 
 
-# UI CHAT COMPONENT — dipertahankan
+# UI CHAT COMPONENT 
 def chat_ui(chat_history_key, chatbot_function, title):
     st.subheader(title)
 
@@ -214,7 +177,6 @@ def chat_ui(chat_history_key, chatbot_function, title):
 
 
 # Fungsi utama untuk halaman tenaga medis
-
 def run_tenaga_medis():
     st.title("🩺 Sistem Prediksi Kanker Payudara (Breast Cancer Classifier) — Mode Tenaga Medis")
     st.write(
@@ -230,10 +192,10 @@ def run_tenaga_medis():
         except Exception as e:
             st.error(f"Gagal membaca CSV: {e}")
             df = None
+            
         if df is not None:
             st.session_state["medical_df"] = df
             st.success("File berhasil dibaca!")
-            st.dataframe(df.head())
 
             # memastikan semua fitur ada sebelum prediksi
             if all(feat in df.columns for feat in feature_list):
@@ -251,13 +213,11 @@ def run_tenaga_medis():
                     st.error(f"Gagal melakukan prediksi: {e}")
             else:
                 st.warning("Beberapa fitur yang dibutuhkan model tidak ditemukan di CSV. Pastikan kolom sesuai feature_list.")
-                st.session_state["medical_df"] = df
+            
+            st.session_state["medical_df"] = df # Pastikan df terbaru (dengan prediksi/warning) tersimpan
 
             st.subheader("📌 Hasil Prediksi")
             st.dataframe(st.session_state["medical_df"])
-
-            # Simpan hasil untuk chatbot
-            st.session_state["medical_df"] = st.session_state["medical_df"]
 
             # Download hasil prediksi 
             try:
