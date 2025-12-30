@@ -1,6 +1,7 @@
 import pandas as pd
 import pickle
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import (
     accuracy_score,
     precision_score,
@@ -14,40 +15,32 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 import matplotlib.pyplot as plt
 
-# 1. LOAD DATA
-df = pd.read_csv("datatrain.csv")
 
-# Hapus kolom yang tidak diperlukan
+df = pd.read_csv("datatrain.csv")
+print(df.head())
+print(df.info())
+
 if 'Unnamed: 32' in df.columns:
     df = df.drop(columns=['Unnamed: 32'])
-
-# Hapus id (tidak digunakan untuk training)
 if 'id' in df.columns:
     df = df.drop(columns=['id'])
 
-# Diagnosis harus ada
-if 'diagnosis' not in df.columns:
-    raise ValueError("Kolom 'diagnosis' tidak ditemukan!")
+print(df.head())
+print(df.info())
 
-# Pisahkan fitur dan label
 X = df.drop(columns=['diagnosis'])
 y = df['diagnosis']
-print("Jumlah data setelah preprocessing:", df.shape)
 print(df.head())
 
-# 2. TRAIN TEST SPLIT
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42
-)
+    X, y, test_size=0.2, random_state=42)
 
-# 3. BUILD MODEL
 from sklearn.pipeline import make_pipeline
 from sklearn.impute import SimpleImputer
-
 models = {
     "Random Forest": RandomForestClassifier(n_estimators=100, random_state=42),
     "Naive Bayes": make_pipeline(SimpleImputer(strategy='mean'), GaussianNB()),
-    "KNN": KNeighborsClassifier(n_neighbors=5)
+    "KNN": make_pipeline(StandardScaler(), KNeighborsClassifier(n_neighbors=5))
 }
 results = {}
 trained_models = {}
@@ -75,7 +68,6 @@ for name, mdl in models.items():
 best_model_name = max(results, key=results.get)
 best_model = trained_models[best_model_name]
 print(f"\nMODEL TERBAIK: {best_model_name} (akurasi {results[best_model_name]:.4f})")
-print("CHECKPOINT 1: Model terbaik ditemukan")
 print(best_model)
 
 # confusion matrix
@@ -83,23 +75,21 @@ pred_best = best_model.predict(X_test)
 
 print("\n=== Classification Report ===")
 print(classification_report(y_test, pred_best))
-print("CHECKPOINT 2: Classification report selesai")
+print(" Classification report selesai")
 
 disp = ConfusionMatrixDisplay.from_predictions(y_test, pred_best)
 disp.plot()
 plt.title(f"Confusion Matrix - {best_model_name}")
 plt.savefig("confusion_matrix.png")
-print("CHECKPOINT 3: Confusion matrix selesai")
+print(" Confusion matrix selesai")
 
 # SAVE MODEL
-print("CHECKPOINT 4: Mau save model...")
-
 with open("best_model.pkl", "wb") as f:
     pickle.dump(best_model, f)
 print("\nModel terbaik berhasil disimpan sebagai: best_model.pkl")
-print("CHECKPOINT 5: MODEL TERSIMPAN!")
+print(" MODEL TERSIMPAN!")
 
-# 8. SAVE NAMA FITUR UNTUK STREAMLIT
+# SAVE NAMA FITUR UNTUK STREAMLIT
 feature_labels = {
     "radius_mean": "Rata-rata Radius Sel",
     "texture_mean": "Rata-rata Tekstur Sel",
