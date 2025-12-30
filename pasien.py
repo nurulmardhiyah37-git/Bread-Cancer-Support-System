@@ -1,13 +1,11 @@
 import streamlit as st
 
 def run_patient_page():
-
     st.title("Informasi Edukatif Kanker Payudara - Mode Pasien")
 
     st.header("Gejala Umum Kanker Payudara Ganas")
     st.markdown("""
     Berikut adalah beberapa **gejala kanker payudara ganas** menurut badan kesehatan dunia:
-
     - Benjolan keras yang tidak terasa nyeri  
     - Perubahan bentuk atau ukuran payudara  
     - Perubahan tekstur kulit (mengkerut seperti kulit jeruk)  
@@ -25,7 +23,6 @@ def run_patient_page():
     st.header("Gejala Umum Kanker Payudara Jinak")
     st.markdown("""
     Ciri-ciri yang **umumnya ditemukan pada Kanker Payudara jinak**:
-
     - Benjolan lunak dan dapat digerakkan  
     - Nyeri yang muncul sebelum atau selama menstruasi  
     - Ukuran benjolan berubah-ubah  
@@ -39,7 +36,7 @@ def run_patient_page():
 
     st.warning("⚠️ Informasi ini bersifat edukatif dan **bukan diagnosis medis**. Untuk kepastian diagnosis, konsultasikan dengan tenaga kesehatan profesional.")
 
-    st.header("Chatbot Edukatif Tanya Jawab Seputar Kanker Payudara")
+    st.header("Chatbot Edukatif Seputar Kanker Payudara")
     user_q = st.text_input("Masukkan pertanyaan Anda:")
 
     responses = {
